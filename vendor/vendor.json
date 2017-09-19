@@ -1,0 +1,127 @@
+{
+	"comment": "",
+	"ignore": "test",
+	"package": [
+		{
+			"checksumSHA1": "tp1AyhQ7df6rAmK9GxuRqVZpja4=",
+			"path": "github.com/ChimeraCoder/anaconda",
+			"revision": "b2574bf45ceab73b763dc5e411b25d4ee046f1ac",
+			"revisionTime": "2017-09-03T20:21:06Z"
+		},
+		{
+			"checksumSHA1": "xE9Zo5ubzdEVBeRf+yD/ZjLALHk=",
+			"path": "github.com/ChimeraCoder/tokenbucket",
+			"revision": "c5a927568de7aad8a58127d80bcd36ca4e71e454",
+			"revisionTime": "2013-12-01T22:36:12Z"
+		},
+		{
+			"checksumSHA1": "3RgReu+42CU1EQ6afDsVSvBuPyk=",
+			"path": "github.com/azr/backoff",
+			"revision": "53511d3c733003985b0b76f733df1f4d0095ee6a",
+			"revisionTime": "2016-01-15T11:51:03Z"
+		},
+		{
+			"checksumSHA1": "NhjLHmLWhjLHrlv7maTxzfXef9o=",
+			"path": "github.com/blendlabs/go-exception",
+			"revision": "04be78b9b2a71cf039fe86cef5221b3d3cb89fd7",
+			"revisionTime": "2017-08-20T19:09:42Z"
+		},
+		{
+			"checksumSHA1": "Ju+jg3lDOsvPtpUHb65AcB7BHPY=",
+			"path": "github.com/blendlabs/go-util",
+			"revision": "1534d773d855a2d07615f81466c67b4c421c19d1",
+			"revisionTime": "2017-09-08T02:20:39Z"
+		},
+		{
+			"checksumSHA1": "ycg56E+pTPAHToKMIj8C5SZ+WYQ=",
+			"path": "github.com/dustin/go-jsonpointer",
+			"revision": "ba0abeacc3dcca5b9b20f31509c46794edbc9965",
+			"revisionTime": "2016-08-14T07:29:49Z"
+		},
+		{
+			"checksumSHA1": "2138MttIW/b+UkA4YMYcTc6yzOU=",
+			"path": "github.com/dustin/gojson",
+			"revision": "2e71ec9dd5adce3b168cd0dbde03b5cc04951c30",
+			"revisionTime": "2016-03-07T16:12:27Z"
+		},
+		{
+			"checksumSHA1": "3f+0/jzvM73c4omzvKWwGnswf3k=",
+			"path": "github.com/garyburd/go-oauth/oauth",
+			"revision": "166ce8d672783fbb5a72247c3cf459267717e1ec",
+			"revisionTime": "2017-07-20T17:39:06Z"
+		},
+		{
+			"checksumSHA1": "aJ/kX/eCUlrCJBZ26Hwh/RXzAIw=",
+			"path": "github.com/golang/freetype/raster",
+			"revision": "e2365dfdc4a05e4b8299a783240d4a7d5a65d4e4",
+			"revisionTime": "2017-06-09T00:35:04Z"
+		},
+		{
+			"checksumSHA1": "I3u9Uh9thka1gsgch6QEiPkaAr0=",
+			"path": "github.com/golang/freetype/truetype",
+			"revision": "e2365dfdc4a05e4b8299a783240d4a7d5a65d4e4",
+			"revisionTime": "2017-06-09T00:35:04Z"
+		},
+		{
+			"checksumSHA1": "5tyeLzZu7FwyINksvzEqouuMOkM=",
+			"path": "github.com/wcharczuk/go-chart",
+			"revision": "a0ea0129036c613675742b96f051df3a1a08821f",
+			"revisionTime": "2017-06-11T18:38:10Z"
+		},
+		{
+			"checksumSHA1": "/Amn4XivPItINSALiV/uQF8ogNw=",
+			"path": "github.com/wcharczuk/go-chart/drawing",
+			"revision": "a0ea0129036c613675742b96f051df3a1a08821f",
+			"revisionTime": "2017-06-11T18:38:10Z"
+		},
+		{
+			"checksumSHA1": "kPqs986jHunAn+grWysGPIABnQc=",
+			"path": "github.com/wcharczuk/go-chart/matrix",
+			"revision": "a0ea0129036c613675742b96f051df3a1a08821f",
+			"revisionTime": "2017-06-11T18:38:10Z"
+		},
+		{
+			"checksumSHA1": "XJZ8xjTjszuaBenrG5kB+jO1w/o=",
+			"path": "github.com/wcharczuk/go-chart/roboto",
+			"revision": "a0ea0129036c613675742b96f051df3a1a08821f",
+			"revisionTime": "2017-06-11T18:38:10Z"
+		},
+		{
+			"checksumSHA1": "K2BgW05KUX00pQepbV36ulhHNhM=",
+			"path": "github.com/wcharczuk/go-chart/seq",
+			"revision": "a0ea0129036c613675742b96f051df3a1a08821f",
+			"revisionTime": "2017-06-11T18:38:10Z"
+		},
+		{
+			"checksumSHA1": "zc0z91e8q0LCIIztdSs0Bp4z1SU=",
+			"path": "github.com/wcharczuk/go-chart/util",
+			"revision": "a0ea0129036c613675742b96f051df3a1a08821f",
+			"revisionTime": "2017-06-11T18:38:10Z"
+		},
+		{
+			"checksumSHA1": "ZEEyhXypFFC4N9ZiiQlgO5VjqU4=",
+			"path": "golang.org/x/image/draw",
+			"revision": "e20db36d77bd0cb36cea8fe49d5c37d82d21591f",
+			"revisionTime": "2017-09-04T00:25:37Z"
+		},
+		{
+			"checksumSHA1": "+U1IB5N4LDS74y4fXjARb4/S4IE=",
+			"path": "golang.org/x/image/font",
+			"revision": "e20db36d77bd0cb36cea8fe49d5c37d82d21591f",
+			"revisionTime": "2017-09-04T00:25:37Z"
+		},
+		{
+			"checksumSHA1": "o7VkCGBiKM5HXzVzrIci1YDlpvc=",
+			"path": "golang.org/x/image/math/f64",
+			"revision": "e20db36d77bd0cb36cea8fe49d5c37d82d21591f",
+			"revisionTime": "2017-09-04T00:25:37Z"
+		},
+		{
+			"checksumSHA1": "euzvwlMLxyD0hwc+raoVsDLv6j4=",
+			"path": "golang.org/x/image/math/fixed",
+			"revision": "e20db36d77bd0cb36cea8fe49d5c37d82d21591f",
+			"revisionTime": "2017-09-04T00:25:37Z"
+		}
+	],
+	"rootPath": "github.com/andefined/botoftheday"
+}
