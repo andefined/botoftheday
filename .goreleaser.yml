@@ -1,6 +1,6 @@
 project_name: botoftheday
 builds:
-    - main: main.go
+    - main: botoftheday.go
       binary: botoftheday
       goos:
         - windows
