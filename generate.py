@@ -2,16 +2,9 @@ from datetime import datetime, timedelta
 import argparse
 import numpy as np
 import pandas as pd
-'''
-import plotly.plotly as py
-import plotly.graph_objs as go
-import plotly.offline as offline
-from IPython.display import Image
-'''
+
 import seaborn as sns
 import matplotlib.pyplot as plt
-
-# py.sign_in('andefined', 'bCeq0wi8qXwxF6q7g0i7')
 
 now = datetime.now()
 d = now - timedelta(days=1)
@@ -94,55 +87,3 @@ def createMentionsPlot(data):
 
 createActivityPlot(pd.concat([asdata,atdata]))
 createMentionsPlot(mdata)
-
-'''
-fig = go.Figure(data=[
-    go.Bar(x=activitydata['created_at'],
-           y=activitydata['count'],
-           marker=dict(color='rgb(75,75,75)',
-                       line=dict(width=0)),
-                       opacity=0.6)
-    ], layout=go.Layout(
-        title=activitydata['bot'][0] + ' Activity ' + d.strftime('%Y-%m-%d %I %p') + ' — ' + now.strftime('%Y-%m-%d %I %p'),
-        width=1280,
-        height=720,
-        plot_bgcolor='rgb(240, 240, 240)',
-        showlegend=False,
-        xaxis=dict(nticks=12),
-        font=dict(family='Roboto, Courier New, monospace',
-                  size=12,
-                  color='#7f7f7f'),
-    )
-)
-
-py.image.save_as(fig, filename=activity+'.png')
-
-pal = sns.color_palette('coolwarm', mentionsdata['user'].count())
-
-colors = []
-for i in pal:
-    colors.append('hsl' + str(i))
-
-fig = go.Figure(data=[go.Pie(
-    labels=mentionsdata['user'],
-    values=mentionsdata['count'],
-    hole=.4,
-    marker=dict(colors=colors),
-    sort=True
-)], layout=go.Layout(
-    title=activitydata['bot'][0] + ' Actions (RTs, RPs, QTs) ' +
-        d.strftime('%Y-%m-%d %I %p') +
-        ' — ' +
-        now.strftime('%Y-%m-%d %I %p'),
-    width=1280,
-    height=720,
-    plot_bgcolor='rgb(240, 240, 240)',
-    font=dict(
-        family='Roboto, Courier New, monospace',
-        size=12,
-        color='#7f7f7f'
-    ),
-))
-
-py.image.save_as(fig, filename=mentions+'.png')
-'''
