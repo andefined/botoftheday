@@ -20,8 +20,6 @@ import (
 	yaml "gopkg.in/yaml.v2"
 
 	"github.com/ChimeraCoder/anaconda"
-	chart "github.com/wcharczuk/go-chart"
-	"github.com/wcharczuk/go-chart/drawing"
 )
 
 // Obj ...
@@ -177,6 +175,8 @@ func Stream() {
 
 // Post : Post a Tweet
 func Post() {
+	now := time.Now()
+
 	tsv := Path + "/" + User + ".tsv"
 	if _, err := os.Stat(tsv); os.IsNotExist(err) {
 		log.Fatal(err)
@@ -185,266 +185,52 @@ func Post() {
 	f, _ := os.Open(tsv)
 	defer f.Close()
 	r := csv.NewReader(f)
-	now := time.Now()
-	// var todaysTweets []*Obj
 	maxgroup := make(map[string]int)
 	for {
 		line, err := r.Read()
 		if err == io.EOF {
 			break
 		}
+
 		createdAt, _ := time.Parse(time.RubyDate, line[1])
 		diff := createdAt.Sub(now).Hours() / (24)
 		if diff > -1.0 {
-			// fmt.Println(line)
-			/*
-				todaysTweets = append(todaysTweets, &Obj{
-					Event:      line[0],
-					CreatedAt:  createdAt,
-					ScreenName: line[2],
-					Source:     line[3],
-					Location:   line[4],
-					Text:       line[5],
-				})
-			*/
 			maxgroup[line[2]]++
 		}
 	}
 	max := 0
 	top := ""
 	for key, value := range maxgroup {
-		if value >= max {
+		if value >= max && strings.ToLower(key) != strings.ToLower(User) {
 			max = maxgroup[key]
 			top = key
 		}
 	}
 
-	fmt.Println(max, top)
-
-	anaconda.SetConsumerKey(Creds.List.ConsumerKey)
-	anaconda.SetConsumerSecret(Creds.List.ConsumerSecret)
-	api := anaconda.NewTwitterApi(Creds.List.AccessToken, Creds.List.AccessTokenSecret)
+	anaconda.SetConsumerKey(Creds.Stream.ConsumerKey)
+	anaconda.SetConsumerSecret(Creds.Stream.ConsumerSecret)
+	api := anaconda.NewTwitterApi(Creds.Stream.AccessToken, Creds.Stream.AccessTokenSecret)
 	if _, err := api.VerifyCredentials(); err != nil {
 		log.Println("Bad Authorization Tokens. Please refer to https://apps.twitter.com/ for your Access Tokens.")
 		os.Exit(1)
 	}
 
-	user, err := api.GetUsersShow(top, url.Values{})
-	if err != nil {
-		log.Println(err)
-		os.Exit(1)
-	}
+	activity := User + "-activity-" + now.Format("2006-01-02") + ".png"
+	buffactibity, _ := ioutil.ReadFile(Path + "/" + strings.ToLower(activity))
+	actibitystring := base64.StdEncoding.EncodeToString(buffactibity)
+	actibitymedia, _ := api.UploadMedia(actibitystring)
 
-	timeline, err := api.GetUserTimeline(url.Values{
-		"screen_name":     []string{user.ScreenName},
-		"count":           []string{"200"},
-		"exclude_replies": []string{"false"},
-		"include_rts":     []string{"true"},
-	})
+	mentions := User + "-mentions-" + now.Format("2006-01-02") + ".png"
+	buffmentions, _ := ioutil.ReadFile(Path + "/" + strings.ToLower(mentions))
+	mentionsstring := base64.StdEncoding.EncodeToString(buffmentions)
+	mentionsmedia, _ := api.UploadMedia(mentionsstring)
 
-	if err != nil {
-		log.Println(err)
-	}
-	type pair struct {
-		i int
-		k string
-		v float64
-	}
-	d := []*pair{} //make(map[string]float64)
-	var rts, rps, qts float64
-	ment := make(map[string]float64)
-	for i, t := range timeline {
-		createdAt, _ := time.Parse(time.RubyDate, t.CreatedAt)
-		diff := createdAt.Sub(now).Hours() / (24)
-		if diff > -1.3 {
-			if t.RetweetedStatus != nil {
-				ment[t.RetweetedStatus.User.ScreenName]++
-				rts++
-			}
-			if t.InReplyToScreenName != "" {
-				ment[t.InReplyToScreenName]++
-				rps++
-			}
-			if t.QuotedStatus != nil {
-				ment[t.QuotedStatus.User.ScreenName]++
-				qts++
-			}
-			idx := -1
-			for i := range d {
-				if d[i].k == createdAt.Add(3*time.Hour).Format("Mon Jan _2 15") {
-					d[i].v++
-					idx++
-				}
-			}
-			if idx == -1 {
-				d = append(d, &pair{
-					k: createdAt.Add(3 * time.Hour).Format("Mon Jan _2 15"),
-					v: 1,
-					i: i,
-				})
-			}
-		}
-	}
-	rev := []*pair{}
-	for i := len(d) - 1; i >= 0; i-- {
-		rev = append(rev, d[i])
-	}
-	Bars := []chart.Value{}
-	for _, p := range rev {
-		Bars = append(Bars, chart.Value{
-			Value: p.v,
-			Label: p.k + ":00",
-			Style: chart.Style{
-				StrokeWidth: 0.0,
-				StrokeColor: drawing.Color{
-					A: 0,
-					B: 0,
-					G: 0,
-					R: 255,
-				},
-				FillColor: chart.ColorAlternateGray,
-				Show:      true,
-			},
-		})
-	}
-	activityGraph := chart.BarChart{
-		Width:  1440,
-		Height: 720,
-		Title:  "@" + user.ScreenName + " Activity",
-		TitleStyle: chart.Style{
-			Show:                true,
-			TextHorizontalAlign: 1,
-			Padding: chart.Box{
-				Top:    48,
-				Left:   48,
-				Right:  48,
-				Bottom: 48,
-			},
-		},
-		XAxis: chart.Style{
-			Show:                true,
-			FontSize:            8.0,
-			StrokeWidth:         0.5,
-			TextHorizontalAlign: 1,
-		},
-		YAxis: chart.YAxis{
-			NameStyle: chart.StyleShow(),
-			AxisType:  chart.YAxisPrimary,
-			Style: chart.Style{
-				Show:        true,
-				FontSize:    8.0,
-				StrokeWidth: 0.5,
-			},
-			TickStyle: chart.Style{
-				TextRotationDegrees: 45.0,
-			},
-		},
-		Bars: Bars,
-	}
+	fmt.Println("Bot Spotted @" + top + " @" + User + " #BotOfTheDay #spam @TwitterSupport")
 
-	af := top + "-" + now.Format("Mon-Jan-_2") + ".png"
-
-	file, _ := os.Create(Path + "/" + "activity-" + strings.ToLower(af))
-	err = activityGraph.Render(chart.PNG, file)
-	if err != nil {
-		log.Println(err)
-		os.Exit(1)
-	}
-
-	buffaf, _ := ioutil.ReadFile(Path + "/" + "activity-" + strings.ToLower(af))
-	afstring := base64.StdEncoding.EncodeToString(buffaf)
-	afmedia, _ := api.UploadMedia(afstring)
-
-	actionsGraph := chart.PieChart{
-		Width:  1440,
-		Height: 720,
-		Title:  "@" + user.ScreenName + " Actions",
-		Background: chart.Style{
-			Padding: chart.Box{
-				Top:    48,
-				Left:   48,
-				Right:  48,
-				Bottom: 48,
-			},
-		},
-		TitleStyle: chart.Style{
-			Show:                true,
-			TextHorizontalAlign: 1,
-		},
-		SliceStyle: chart.Style{
-			Show:                true,
-			TextHorizontalAlign: 1,
-			FontSize:            8.0,
-			StrokeWidth:         2,
-		},
-		Values: []chart.Value{
-			{Value: rts, Label: "Retweets (" + fmt.Sprintf("%v", rts) + "x)"},
-			{Value: rps, Label: "Replies (" + fmt.Sprintf("%v", rps) + "x)"},
-			{Value: qts, Label: "Quotes (" + fmt.Sprintf("%v", qts) + "x)"},
-		},
-	}
-
-	file, _ = os.Create(Path + "/" + "actions-" + strings.ToLower(af))
-	err = actionsGraph.Render(chart.PNG, file)
-	if err != nil {
-		log.Println(err)
-		os.Exit(1)
-	}
-
-	buffas, _ := ioutil.ReadFile(Path + "/" + "actions-" + strings.ToLower(af))
-	asstring := base64.StdEncoding.EncodeToString(buffas)
-	amedia, _ := api.UploadMedia(asstring)
-
-	useMentionsValues := []chart.Value{}
-	for k, v := range ment {
-		if v > 1.0 {
-			useMentionsValues = append(useMentionsValues, chart.Value{
-				Value: v,
-				Label: k + " (" + fmt.Sprintf("%v", v) + "x)",
-			})
-		}
-	}
-	userMentionsGraph := chart.PieChart{
-		Width:  1440,
-		Height: 720,
-		Title:  "@" + user.ScreenName + " User Mentions (RTs. QTs, RPs)",
-		Background: chart.Style{
-			Padding: chart.Box{
-				Top:    48,
-				Left:   48,
-				Right:  48,
-				Bottom: 48,
-			},
-		},
-		TitleStyle: chart.Style{
-			Show:                true,
-			TextHorizontalAlign: 1,
-		},
-		SliceStyle: chart.Style{
-			Show:        true,
-			FontSize:    8.0,
-			StrokeWidth: 2,
-			// StrokeColor: chart.ColorAlternateLightGray,
-		},
-		Values: useMentionsValues,
-	}
-
-	file, _ = os.Create(Path + "/" + "user-mentions-" + strings.ToLower(af))
-	err = userMentionsGraph.Render(chart.PNG, file)
-	if err != nil {
-		log.Println(err)
-		os.Exit(1)
-	}
-
-	buffum, _ := ioutil.ReadFile(Path + "/" + "user-mentions-" + strings.ToLower(af))
-	umstring := base64.StdEncoding.EncodeToString(buffum)
-	ummedia, _ := api.UploadMedia(umstring)
-	meadiaIDStr := afmedia.MediaIDString + "," + amedia.MediaIDString + "," + ummedia.MediaIDString
-	post, _ := api.PostTweet("Bot Spotted @"+top+" @"+User+" #BotOfTheDay @twitter", url.Values{
+	meadiaIDStr := actibitymedia.MediaIDString + "," + mentionsmedia.MediaIDString
+	api.PostTweet("Bot Spotted @"+top+" @"+User+" #BotOfTheDay #spam @TwitterSupport", url.Values{
 		"media_ids": []string{meadiaIDStr},
 	})
-
-	fmt.Println(post)
 }
 
 // List : List Various Metrics
@@ -458,245 +244,29 @@ func List() {
 	defer f.Close()
 	r := csv.NewReader(f)
 	now := time.Now()
-	// var todaysTweets []*Obj
 	maxgroup := make(map[string]int)
 	for {
 		line, err := r.Read()
 		if err == io.EOF {
 			break
 		}
+
 		createdAt, _ := time.Parse(time.RubyDate, line[1])
 		diff := createdAt.Sub(now).Hours() / (24)
 		if diff > -1.0 {
-			// fmt.Println(line)
-			/*
-				todaysTweets = append(todaysTweets, &Obj{
-					Event:      line[0],
-					CreatedAt:  createdAt,
-					ScreenName: line[2],
-					Source:     line[3],
-					Location:   line[4],
-					Text:       line[5],
-				})
-			*/
 			maxgroup[line[2]]++
 		}
 	}
 	max := 0
 	top := ""
 	for key, value := range maxgroup {
-		if value >= max {
+		if value >= max && strings.ToLower(key) != strings.ToLower(User) {
 			max = maxgroup[key]
 			top = key
 		}
 	}
-
-	fmt.Println(max, top)
-
-	anaconda.SetConsumerKey(Creds.List.ConsumerKey)
-	anaconda.SetConsumerSecret(Creds.List.ConsumerSecret)
-	api := anaconda.NewTwitterApi(Creds.List.AccessToken, Creds.List.AccessTokenSecret)
-	if _, err := api.VerifyCredentials(); err != nil {
-		log.Println("Bad Authorization Tokens. Please refer to https://apps.twitter.com/ for your Access Tokens.")
-		os.Exit(1)
-	}
-
-	user, err := api.GetUsersShow(top, url.Values{})
-	if err != nil {
-		log.Println(err)
-		os.Exit(1)
-	}
-
-	timeline, err := api.GetUserTimeline(url.Values{
-		"screen_name":     []string{user.ScreenName},
-		"count":           []string{"200"},
-		"exclude_replies": []string{"false"},
-		"include_rts":     []string{"true"},
-	})
-
-	if err != nil {
-		log.Println(err)
-	}
-	type pair struct {
-		i int
-		k string
-		v float64
-	}
-	d := []*pair{} //make(map[string]float64)
-	var rts, rps, qts float64
-	ment := make(map[string]float64)
-	for i, t := range timeline {
-		createdAt, _ := time.Parse(time.RubyDate, t.CreatedAt)
-		diff := createdAt.Sub(now).Hours() / (24)
-		if diff > -1.3 {
-			if t.RetweetedStatus != nil {
-				ment[t.RetweetedStatus.User.ScreenName]++
-				rts++
-			}
-			if t.InReplyToScreenName != "" {
-				ment[t.InReplyToScreenName]++
-				rps++
-			}
-			if t.QuotedStatus != nil {
-				ment[t.QuotedStatus.User.ScreenName]++
-				qts++
-			}
-			idx := -1
-			for i := range d {
-				if d[i].k == createdAt.Add(3*time.Hour).Format("Mon Jan _2 15") {
-					d[i].v++
-					idx++
-				}
-			}
-			if idx == -1 {
-				d = append(d, &pair{
-					k: createdAt.Add(3 * time.Hour).Format("Mon Jan _2 15"),
-					v: 1,
-					i: i,
-				})
-			}
-		}
-	}
-	rev := []*pair{}
-	for i := len(d) - 1; i >= 0; i-- {
-		rev = append(rev, d[i])
-	}
-	Bars := []chart.Value{}
-	for _, p := range rev {
-		Bars = append(Bars, chart.Value{
-			Value: p.v,
-			Label: p.k + ":00",
-			Style: chart.Style{
-				StrokeWidth: 0.0,
-				StrokeColor: drawing.Color{
-					A: 0,
-					B: 0,
-					G: 0,
-					R: 255,
-				},
-				FillColor: chart.ColorAlternateGray,
-				Show:      true,
-			},
-		})
-	}
-	activityGraph := chart.BarChart{
-		Width:  1440,
-		Height: 720,
-		Title:  "@" + user.ScreenName + " Activity",
-		TitleStyle: chart.Style{
-			Show:                true,
-			TextHorizontalAlign: 1,
-			Padding: chart.Box{
-				Top:    48,
-				Left:   48,
-				Right:  48,
-				Bottom: 48,
-			},
-		},
-		XAxis: chart.Style{
-			Show:                true,
-			FontSize:            8.0,
-			StrokeWidth:         0.5,
-			TextHorizontalAlign: 1,
-		},
-		YAxis: chart.YAxis{
-			NameStyle: chart.StyleShow(),
-			AxisType:  chart.YAxisPrimary,
-			Style: chart.Style{
-				Show:        true,
-				FontSize:    8.0,
-				StrokeWidth: 0.5,
-			},
-			TickStyle: chart.Style{
-				TextRotationDegrees: 45.0,
-			},
-		},
-		Bars: Bars,
-	}
-
-	af := top + "-" + now.Format("Mon-Jan-_2") + ".png"
-
-	file, _ := os.Create(Path + "/" + "activity-" + strings.ToLower(af))
-	err = activityGraph.Render(chart.PNG, file)
-	if err != nil {
-		log.Println(err)
-		os.Exit(1)
-	}
-	actionsGraph := chart.PieChart{
-		Width:  1440,
-		Height: 720,
-		Title:  "@" + user.ScreenName + " Actions",
-		Background: chart.Style{
-			Padding: chart.Box{
-				Top:    48,
-				Left:   48,
-				Right:  48,
-				Bottom: 48,
-			},
-		},
-		TitleStyle: chart.Style{
-			Show:                true,
-			TextHorizontalAlign: 1,
-		},
-		SliceStyle: chart.Style{
-			Show:                true,
-			TextHorizontalAlign: 1,
-			FontSize:            8.0,
-			StrokeWidth:         2,
-		},
-		Values: []chart.Value{
-			{Value: rts, Label: "Retweets (" + fmt.Sprintf("%v", rts) + "x)"},
-			{Value: rps, Label: "Replies (" + fmt.Sprintf("%v", rps) + "x)"},
-			{Value: qts, Label: "Quotes (" + fmt.Sprintf("%v", qts) + "x)"},
-		},
-	}
-
-	file, _ = os.Create(Path + "/" + "actions-" + strings.ToLower(af))
-	err = actionsGraph.Render(chart.PNG, file)
-	if err != nil {
-		log.Println(err)
-		os.Exit(1)
-	}
-	useMentionsValues := []chart.Value{}
-	for k, v := range ment {
-		if v > 1.0 {
-			useMentionsValues = append(useMentionsValues, chart.Value{
-				Value: v,
-				Label: k + " (" + fmt.Sprintf("%v", v) + "x)",
-			})
-		}
-	}
-	userMentionsGraph := chart.PieChart{
-		Width:  1440,
-		Height: 720,
-		Title:  "@" + user.ScreenName + " User Mentions (RTs. QTs, RPs)",
-		Background: chart.Style{
-			Padding: chart.Box{
-				Top:    48,
-				Left:   48,
-				Right:  48,
-				Bottom: 48,
-			},
-		},
-		TitleStyle: chart.Style{
-			Show:                true,
-			TextHorizontalAlign: 1,
-		},
-		SliceStyle: chart.Style{
-			Show:        true,
-			FontSize:    8.0,
-			StrokeWidth: 2,
-			// StrokeColor: chart.ColorAlternateLightGray,
-		},
-		Values: useMentionsValues,
-	}
-
-	file, _ = os.Create(Path + "/" + "user-mentions-" + strings.ToLower(af))
-	err = userMentionsGraph.Render(chart.PNG, file)
-	if err != nil {
-		log.Println(err)
-		os.Exit(1)
-	}
+	GenData(top, false)
+	GenData(User, true)
 }
 
 // StreamHandler ...
@@ -731,5 +301,106 @@ func (d StreamHandler) Handle(m interface{}) {
 func (d StreamHandler) HandleChan(c <-chan interface{}) {
 	for m := range c {
 		d.Handle(m)
+	}
+}
+
+// GenData Generates Output Data
+func GenData(u string, b bool) {
+	now := time.Now()
+	name := "target"
+	if b {
+		name = "source"
+	}
+	anaconda.SetConsumerKey(Creds.List.ConsumerKey)
+	anaconda.SetConsumerSecret(Creds.List.ConsumerSecret)
+	api := anaconda.NewTwitterApi(Creds.List.AccessToken, Creds.List.AccessTokenSecret)
+	if _, err := api.VerifyCredentials(); err != nil {
+		log.Println("Bad Authorization Tokens. Please refer to https://apps.twitter.com/ for your Access Tokens.")
+		os.Exit(1)
+	}
+
+	user, err := api.GetUsersShow(u, url.Values{})
+	if err != nil {
+		log.Println(err)
+		os.Exit(1)
+	}
+
+	timeline, err := api.GetUserTimeline(url.Values{
+		"screen_name":     []string{user.ScreenName},
+		"count":           []string{"200"},
+		"exclude_replies": []string{"false"},
+		"include_rts":     []string{"true"},
+	})
+
+	if err != nil {
+		log.Println(err)
+	}
+	type pair struct {
+		i int
+		k string
+		v float64
+	}
+	d := []*pair{}
+	var rts, rps, qts float64
+	ment := make(map[string]float64)
+	for i, t := range timeline {
+		createdAt, _ := time.Parse(time.RubyDate, t.CreatedAt)
+		diff := createdAt.Sub(now).Hours() / (24)
+		if diff > -1.1 {
+			if t.RetweetedStatus != nil {
+				ment[t.RetweetedStatus.User.ScreenName]++
+				rts++
+			}
+			if t.InReplyToScreenName != "" {
+				ment[t.InReplyToScreenName]++
+				rps++
+			}
+			if t.QuotedStatus != nil {
+				ment[t.QuotedStatus.User.ScreenName]++
+				qts++
+			}
+			idx := -1
+			for i := range d {
+				if d[i].k == createdAt.Add(3*time.Hour).Format("3 PM") {
+					d[i].v++
+					idx++
+				}
+			}
+			if idx == -1 {
+				d = append(d, &pair{
+					k: createdAt.Add(3 * time.Hour).Format("3 PM"),
+					v: 1,
+					i: i,
+				})
+			}
+		}
+	}
+	rev := []*pair{}
+	for i := len(d) - 1; i >= 0; i-- {
+		rev = append(rev, d[i])
+	}
+
+	activitytsv := Path + "/" + User + "-activity-" + name + "-" + now.Format("2006-01-02") + ".csv"
+	os.Remove(activitytsv)
+	f, err := os.OpenFile(activitytsv, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer f.Close()
+	f.WriteString("bot,created_at,count\n")
+	for _, p := range rev {
+		f.WriteString(fmt.Sprintf("%s,%s,%v\n", user.ScreenName, p.k, p.v))
+	}
+
+	mentionstsv := Path + "/" + User + "-mentions-" + name + "-" + now.Format("2006-01-02") + ".csv"
+	os.Remove(mentionstsv)
+	f, err = os.OpenFile(mentionstsv, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer f.Close()
+	f.WriteString("bot,user,count\n")
+	for k, v := range ment {
+		f.WriteString(fmt.Sprintf("%s,%s,%v\n", user.ScreenName, k, v))
 	}
 }
