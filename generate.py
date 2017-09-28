@@ -1,18 +1,17 @@
 from datetime import datetime, timedelta
 import argparse
-import numpy as np
-import pandas as pd
 
+import pandas as pd
 import seaborn as sns
+
 import matplotlib.pyplot as plt
 
 now = datetime.now()
 d = now - timedelta(days=1)
-
-timeTitle = d.strftime('%Y-%m-%d %I %p') + ' — ' + now.strftime('%Y-%m-%d %I %p')
+timeTitle = d.strftime('%Y-%m-%d %I %p') + ' - ' + now.strftime('%Y-%m-%d %I %p')
 
 parser = argparse.ArgumentParser()
-parser.add_argument('-u', dest='user', default='adonisgeorgiadi')
+parser.add_argument('-u', dest='user', default='')
 results = parser.parse_args()
 
 activity = 'data/' + results.user + '-activity-'
@@ -29,12 +28,12 @@ mtdata = mtdata.query('count > 1')
 mtdata = mtdata.sort_values(by='count', ascending=False)
 mdata = pd.concat([msdata, mtdata])
 mdata = mdata.sort_values(by='count', ascending=False)
+
 source = asdata['bot'][0]
 target = atdata['bot'][0]
 
 def createActivityPlot(data):
     sns.set_style('whitegrid', {
-        # {'font.family': ['Roboto']}
         'xtick.color': '0.15',
         'ytick.color': '0.15',
         'ytick.direction': 'in'
@@ -58,6 +57,7 @@ def createActivityPlot(data):
     plt.suptitle(title)
     plt.tight_layout(pad=4)
     plt.savefig(activity + now.strftime('%Y-%m-%d') + '.png')
+    return activity + now.strftime('%Y-%m-%d') + '.png'
 
 def createMentionsPlot(data):
     sns.set_style('whitegrid', {
@@ -84,6 +84,9 @@ def createMentionsPlot(data):
     plt.suptitle(title)
     plt.tight_layout(pad=4)
     plt.savefig(mentions + now.strftime('%Y-%m-%d') + '.png')
+    return activity + now.strftime('%Y-%m-%d') + '.png'
 
-createActivityPlot(pd.concat([asdata,atdata]))
-createMentionsPlot(mdata)
+ap = createActivityPlot(pd.concat([asdata, atdata]))
+mp = createMentionsPlot(mdata)
+
+print(ap, mp)

@@ -11,6 +11,7 @@ import (
 	"log"
 	"net/url"
 	"os"
+	"os/exec"
 	"os/signal"
 	"regexp"
 	"strings"
@@ -69,7 +70,7 @@ func init() {
 	// Get Command Argument
 	args := flag.Args()
 	if len(args) == 0 {
-		log.Println("You need to pass a command. Available Commands [list, stream, post].")
+		log.Println("You need to pass a command. Available Commands [stream, list, generate, post].")
 		os.Exit(1)
 	}
 
@@ -94,6 +95,8 @@ func main() {
 		Post()
 	case "list":
 		List()
+	case "generate":
+		Generate()
 	}
 }
 
@@ -267,6 +270,14 @@ func List() {
 	}
 	GenData(top, false)
 	GenData(User, true)
+}
+
+// Generate ...
+func Generate() {
+	cmd := exec.Command("python", "generate.py", "-u"+User)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	cmd.Run()
 }
 
 // StreamHandler ...
